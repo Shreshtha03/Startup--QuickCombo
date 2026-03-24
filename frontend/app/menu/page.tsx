@@ -1,6 +1,6 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import axios from 'axios';
 import { Search, LayoutGrid, AlignJustify, Filter } from 'lucide-react';
 import FoodCard from '@/components/FoodCard';
@@ -20,7 +20,7 @@ interface MenuItem {
   category_name: string; is_featured: boolean; restaurant_name?: string;
 }
 
-export default function MenuPage() {
+function MenuContent() {
   const searchParams = useSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
@@ -137,11 +137,12 @@ export default function MenuPage() {
             <p className="text-gray-600 text-sm mt-1">Try a different search or category</p>
           </div>
         ) : (
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             <motion.div
               key={category}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="space-y-2.5"
             >
               {filtered.map(item => (
@@ -152,5 +153,19 @@ export default function MenuPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MenuPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-4 space-y-3">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="shimmer rounded-2xl h-36" />
+        ))}
+      </div>
+    }>
+      <MenuContent />
+    </Suspense>
   );
 }
