@@ -1,43 +1,30 @@
-# QuickCombo Deployment Guide (24/7 Free Hosting)
+# QuickCombo Deployment Guide (TRULY FREE + NO CARD)
 
-Follow these steps to get your project live forever without cold starts.
+Follow these steps for 24/7 hosting with **Zero Credit Card Required**.
 
-## 1. Database (Neon.tech)
-1. Go to [Neon.tech](https://neon.tech/) and create a free account.
-2. Create a new project.
-3. Copy the **Connection String** from the dashboard. It starts with `postgres://...`
-4. This will be your `DATABASE_URL`.
+## 1. Backend & Database (AlwaysData.com)
+AlwaysData is a premium French hosting service that stays live for life on their free tier.
+1. Go to [AlwaysData.com](https://www.alwaysdata.com/) and register for a **Free Account** (Hobby plan).
+2. **No Credit Card Required.**
+3. In the dashboard, go to **Web** -> **Sites** and add a new "Python WSGI" site.
+4. Go to **Databases** -> **PostgreSQL** and create a new database.
+5. You will get a host (e.g. `postgresql-ayuxhx06.alwaysdata.net`).
+6. This will be your `DATABASE_URL`.
 
-## 2. Backend (Koyeb.com)
-1. Go to [Koyeb.com](https://www.koyeb.com/) and create a free account.
-2. Click **Create Service** -> **GitHub**.
-3. Select your repository: `Startup--QuickCombo`.
-4. **Choose Instance Type:** Select **"Free"** (Washington D.C. or Frankfurt).
-5. **Environment Variables:** Add the following:
-   - `DATABASE_URL`: (The string you copied from Neon)
-   - `SECRET_KEY`: (A random long string)
-   - `DEBUG`: `False`
-   - `ALLOWED_HOSTS`: `*`
-   - `BREVO_API_KEY`: (Your Brevo key)
-   - `CORS_ALLOWED_ORIGINS`: `https://your-vercel-domain.vercel.app` (Add this later)
-6. Click **Deploy**.
-
-## 3. Frontend (Vercel.com)
+## 2. Frontend (Vercel.com)
 1. Go to [Vercel.com](https://vercel.com/) and connect your GitHub.
-2. Select the `frontend` directory as the root.
-3. **Environment Variables:** Add:
-   - `NEXT_PUBLIC_API_URL`: (Your Koyeb service URL, e.g. `https://xxx.koyeb.app`)
+2. Select the `frontend` directory.
+3. **No Credit Card Required** for the Hobby plan.
+4. Add environment variables:
+   - `NEXT_PUBLIC_API_URL`: (Your AlwaysData site URL, e.g. `https://ayuxhx06.alwaysdata.net`)
    - `NEXT_PUBLIC_UPI_ID`: `ayushtomar061004-1@okaxis`
    - `NEXT_PUBLIC_UPI_NAME`: `Ayush Tomar`
-4. Click **Deploy**.
+5. Deploy!
 
 ---
 
-### Post-Deployment: Seeding Data
-Once the backend is live on Koyeb:
-1. Go to the **Console** tab in your Koyeb service.
-2. Run: `python manage.py migrate`
-3. Run: `python manage.py shell -c "import seed_disco; seed_disco.seed_disco()"`
-4. Run: `python manage.py shell -c "import fix_categories; fix_categories.fix_categories()"`
+### Why this setup?
+- **AlwaysData:** Unlike Koyeb, they don't ask for a card for the free tier. Your server stays live 24/7.
+- **Vercel:** Best for your Next.js app, extremely fast and card-free.
 
-Now your app is live and synced!
+I've updated the code (`settings.py`) to work perfectly with this setup. Just push the code and follow these two sites!
