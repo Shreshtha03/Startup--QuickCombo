@@ -120,6 +120,10 @@ export default function CheckoutPage() {
     const finalAddress = address ? address.trim() : (typedAddress.trim() ? `${typedAddress}, ${autoLocation || 'India'}` : '');
     if (!finalAddress) { toast.error('Delivery address is required (House/Flat No.)'); return; }
     
+    const currentCalculatedTotal = items.length > 0 
+      ? (parseFloat(total as any) - Math.floor(parseFloat(total as any) * 0.1) + 40) 
+      : 0;
+
     setLoading(true);
     try {
       const payload = {
@@ -131,13 +135,18 @@ export default function CheckoutPage() {
         lng,
         payment_method: payment,
         notes: scheduledTime ? `[SCHEDULED: ${scheduledTime}] ${notes}` : notes,
-        items: items.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity }))
+        items: items.map(i => ({ 
+          id: i.id, 
+          name: i.name, 
+          price: parseFloat(i.price as any) || 0, 
+          quantity: i.quantity || 1 
+        }))
       };
       
       const res = await axios.post(`${API}/api/orders/place/`, payload);
       setOrderId(res.data.order_id);
       localStorage.setItem('activeOrderId', res.data.order_id.toString());
-      setFinalTotal(currentCalculatedTotal);
+      setFinalTotal(isNaN(currentCalculatedTotal) ? 0 : currentCalculatedTotal);
       setSuccess(true);
       clearCart();
       setTimeout(() => router.push(`/orders/${res.data.order_id}`), 1000);
@@ -190,7 +199,7 @@ export default function CheckoutPage() {
         {/* Top Floating Savings Strip */}
         <div className="bg-gradient-to-r from-green-500/20 to-green-600/10 border-l-4 border-green-500 rounded-lg p-3 flex items-center justify-center gap-2">
           <span>🎉</span> 
-          <span className="text-green-400 font-bold text-sm">You saved ₹{Math.floor(total * 0.1)} with PRO</span>
+          <span className="text-green-400 font-bold text-sm">You saved ₹{Math.floor(parseFloat(total as any) * 0.1) || 0} with PRO</span>
         </div>
 
         {/* 1. Added Items Card */}
@@ -306,11 +315,11 @@ export default function CheckoutPage() {
           <div className="space-y-2.5 text-sm">
             <div className="flex justify-between text-gray-400">
               <span>Item Total</span>
-              <span>₹{total}</span>
+              <span>₹{parseFloat(total as any) || 0}</span>
             </div>
             <div className="flex justify-between text-green-400">
               <span>Platform Discount</span>
-              <span>-₹{Math.floor(total * 0.1)}</span>
+              <span>-₹{Math.floor(parseFloat(total as any) * 0.1) || 0}</span>
             </div>
             <div className="flex justify-between text-gray-400 border-b border-white/5 pb-3">
               <span>Delivery Partner Fee</span>
@@ -319,8 +328,8 @@ export default function CheckoutPage() {
             <div className="flex justify-between font-bold text-lg text-white pt-1">
               <span>Total Bill</span>
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 text-sm line-through">₹{(total || 0) + 40}</span>
-                <span>₹{(total || 0) - Math.floor((total || 0) * 0.1) + 40}</span>
+                <span className="text-gray-500 text-sm line-through">₹{(parseFloat(total as any) || 0) + 40}</span>
+                <span>₹{(parseFloat(total as any) || 0) - Math.floor(parseFloat(total as any) * 0.1) + 40}</span>
               </div>
             </div>
           </div>
@@ -420,7 +429,7 @@ export default function CheckoutPage() {
           className="bg-green-500 hover:bg-green-400 text-black rounded-[14px] px-6 py-3.5 flex items-center gap-3 min-w-[160px] shadow-[0_4px_16px_rgba(34,197,94,0.3)] disabled:opacity-50"
         >
           <div className="flex flex-col items-start border-r border-black/20 pr-3">
-            <span className="text-[15px] font-black leading-none">₹{currentCalculatedTotal}</span>
+            <span className="text-[15px] font-black leading-none">₹{isNaN(parseFloat(total as any) - Math.floor(parseFloat(total as any) * 0.1) + 40) ? 0 : (parseFloat(total as any) - Math.floor(parseFloat(total as any) * 0.1) + 40)}</span>
             <span className="text-[10px] font-bold text-black/70">TOTAL</span>
           </div>
           <div className="flex items-center font-black text-[15px]">

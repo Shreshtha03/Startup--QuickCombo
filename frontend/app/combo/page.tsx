@@ -33,7 +33,7 @@ export default function ComboBuilder() {
   };
 
   const selectedItems = items.filter(i => selectedIds.has(i.id));
-  const subtotal = selectedItems.reduce((acc, i) => acc + i.price, 0);
+  const subtotal = selectedItems.reduce((acc, i) => acc + (parseFloat(i.price as any) || 0), 0);
 
   // Apply 15% discount for 3+ items
   const discount = selectedItems.length >= 3 ? Math.floor(subtotal * 0.15) : 0;
