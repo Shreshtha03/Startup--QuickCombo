@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import AuthModal from './AuthModal';
+import LocationModal from './LocationModal';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
@@ -17,6 +18,7 @@ export default function Navbar() {
   const { user, setShowAuthModal } = useAuth();
   const [locationName, setLocationName] = useState('Set delivery location');
   const [isLocating, setIsLocating] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -24,6 +26,15 @@ export default function Navbar() {
     const saved = localStorage.getItem('qc_location');
     if (saved) setLocationName(saved);
   }, []);
+
+  const onSelectLocation = (address: string, lat: number, lng: number) => {
+    const shortName = address.split(',').slice(0, 2).join(', ');
+    setLocationName(shortName);
+    localStorage.setItem('qc_location', shortName);
+    localStorage.setItem('qc_lat', lat.toString());
+    localStorage.setItem('qc_lng', lng.toString());
+    window.dispatchEvent(new Event('storage')); // Notify other components
+  };
 
   const fetchLocation = () => {
     setIsLocating(true);
@@ -41,11 +52,7 @@ export default function Navbar() {
           });
           const fetchedAddress = r.data.address;
           if (fetchedAddress) {
-            const shortName = fetchedAddress.split(',').slice(0, 2).join(', '); // take first 2 parts
-            setLocationName(shortName);
-            localStorage.setItem('qc_location', shortName);
-            localStorage.setItem('qc_lat', latitude.toString());
-            localStorage.setItem('qc_lng', longitude.toString());
+            onSelectLocation(fetchedAddress, latitude, longitude);
           }
         } catch (e) {
           console.error(e);
@@ -77,8 +84,7 @@ export default function Navbar() {
 
             {/* Location */}
             <button
-              onClick={fetchLocation}
-              disabled={isLocating}
+              onClick={() => setIsLocationModalOpen(true)}
               className="flex items-center gap-1 text-[11px] text-gray-400 font-semibold max-w-[200px] hover:text-green-400 transition-colors"
             >
               {isLocating ? <Loader2 size={12} className="animate-spin text-green-500" /> : <MapPin size={12} className="text-green-500" />}
@@ -183,6 +189,13 @@ export default function Navbar() {
         </div>
       </nav>
       <AuthModal />
+      <LocationModal 
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onDetect={fetchLocation}
+        onSelect={onSelectLocation}
+        isLocating={isLocating}
+      />
     </>
   );
 }

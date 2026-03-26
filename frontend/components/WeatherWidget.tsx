@@ -11,19 +11,24 @@ export default function WeatherWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Try to get user location for accurate weather
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          fetchWeather(pos.coords.latitude, pos.coords.longitude);
-        },
-        () => {
-          fetchWeather(); // default location (Delhi)
-        }
-      );
-    } else {
-      fetchWeather();
-    }
+    const updateWeather = () => {
+      const savedLat = localStorage.getItem('qc_lat');
+      const savedLng = localStorage.getItem('qc_lng');
+      if (savedLat && savedLng) {
+        fetchWeather(parseFloat(savedLat), parseFloat(savedLng));
+      } else if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+          () => fetchWeather() // default Delhi
+        );
+      } else {
+        fetchWeather();
+      }
+    };
+
+    updateWeather();
+    window.addEventListener('storage', updateWeather);
+    return () => window.removeEventListener('storage', updateWeather);
   }, []);
 
   const fetchWeather = (lat?: number, lng?: number) => {

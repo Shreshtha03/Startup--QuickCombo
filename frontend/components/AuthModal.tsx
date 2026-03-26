@@ -29,20 +29,27 @@ export default function AuthModal() {
   const handleSendOtp = async () => {
     if (!email.includes('@')) { toast.error('Enter a valid email'); return; }
     setLoading(true);
-    const ok = await sendOtp(email);
+    const { success, error } = await sendOtp(email);
     setLoading(false);
-    if (ok) { setStep('otp'); toast.success('OTP sent to your email!'); }
-    else toast.error('Failed to send OTP. Try again.');
+    if (success) { 
+      setStep('otp'); 
+      toast.success('OTP sent to your email!'); 
+    } else {
+      toast.error(error || 'Failed to send OTP');
+    }
   };
 
   const handleVerifyOtp = async () => {
     const code = otp.join('');
     if (code.length !== 6) { toast.error('Enter the full 6-digit OTP'); return; }
     setLoading(true);
-    const ok = await verifyOtp(email, code, name, phone);
+    const { success, error } = await verifyOtp(email, code, name, phone);
     setLoading(false);
-    if (ok) { toast.success(`Welcome to QuickCombo! 🎉`); }
-    else toast.error('Invalid or expired OTP');
+    if (success) { 
+      toast.success(`Welcome to QuickCombo! 🎉`); 
+    } else {
+      toast.error(error || 'Invalid or expired OTP');
+    }
   };
 
   const handleClose = () => {

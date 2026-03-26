@@ -19,8 +19,8 @@ interface AuthContextType {
   isLoggedIn: boolean;
   showAuthModal: boolean;
   setShowAuthModal: (show: boolean) => void;
-  sendOtp: (email: string) => Promise<boolean>;
-  verifyOtp: (email: string, otp: string, name?: string, phone?: string) => Promise<boolean>;
+  sendOtp: (email: string) => Promise<{success: boolean; error?: string}>;
+  verifyOtp: (email: string, otp: string, name?: string, phone?: string) => Promise<{success: boolean; error?: string}>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -47,22 +47,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     Cookies.remove('qc_user');
   };
 
-  const sendOtp = async (email: string): Promise<boolean> => {
+  const sendOtp = async (email: string): Promise<{success: boolean; error?: string}> => {
     try {
       await axios.post(`${API}/api/auth/send-otp/`, { email });
-      return true;
-    } catch {
-      return false;
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.response?.data?.error || 'Failed to send OTP' };
     }
   };
 
-  const verifyOtp = async (email: string, otp: string, name = '', phone = ''): Promise<boolean> => {
+  const verifyOtp = async (email: string, otp: string, name = '', phone = ''): Promise<{success: boolean; error?: string}> => {
     try {
       const res = await axios.post(`${API}/api/auth/verify-otp/`, { email, otp, name, phone });
       login(res.data.user);
-      return true;
-    } catch {
-      return false;
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.response?.data?.error || 'Invalid OTP' };
     }
   };
 
