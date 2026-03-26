@@ -40,10 +40,11 @@ def send_otp_email(to_email, otp, name="User"):
                           timeout=10)
         if r.status_code != 201:
             print(f"Brevo API error: {r.status_code} - {r.text}")
-        return True # ALWAYS return True to not block login
+            return False
+        return True
     except Exception as e:
         print(f"Brevo error: {e}")
-        return True # ALWAYS return True to not block login
+        return False
 
 
 def send_order_confirmation_email(order):
@@ -112,6 +113,9 @@ def send_order_confirmation_email(order):
                           headers={"api-key": settings.BREVO_API_KEY},
                           timeout=10)
                           
+        if r.status_code != 201:
+            print(f"Brevo API error (User): {r.status_code} - {r.text}")
+            
         admin_email = getattr(settings, 'ADMIN_EMAIL', None)
         if admin_email:
             admin_payload = payload.copy()
@@ -126,10 +130,12 @@ def send_order_confirmation_email(order):
                 "QuickCombo — NEW ORDER RECEIVED!"
             )
             
-            requests.post("https://api.brevo.com/v3/smtp/email",
+            r_admin = requests.post("https://api.brevo.com/v3/smtp/email",
                           json=admin_payload,
                           headers={"api-key": settings.BREVO_API_KEY},
                           timeout=10)
+            if r_admin.status_code != 201:
+                print(f"Brevo API error (Admin): {r_admin.status_code} - {r_admin.text}")
                           
         return r.status_code == 201
     except Exception as e:
