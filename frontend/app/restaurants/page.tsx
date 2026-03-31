@@ -1,12 +1,14 @@
 'use client';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
 import axios from 'axios';
 import Link from 'next/link';
 import { ArrowLeft, Star, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://quickcombo.alwaysdata.net';
 
 interface Restaurant {
   id: number; name: string; rating: number; delivery_time: number;
@@ -15,17 +17,8 @@ interface Restaurant {
 
 export default function RestaurantsPage() {
   const router = useRouter();
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    axios.get(`${API}/api/restaurants/`)
-      .then(r => {
-        setRestaurants(r.data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  const fetcher = (url: string) => axios.get(url).then(res => res.data);
+  const { data: restaurants = [], isLoading: loading } = useSWR<Restaurant[]>(`${API}/api/restaurants/`, fetcher);
 
   return (
     <div className="page-wrapper min-h-screen bg-black">
@@ -59,10 +52,12 @@ export default function RestaurantsPage() {
                 className="w-full rounded-3xl overflow-hidden glass hover:border-green-500/40 transition-all cursor-pointer group"
               >
                 <div className="h-[180px] relative overflow-hidden">
-                  <img 
+                  <Image 
                     src={rest.image_url} 
                     alt={rest.name} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                    sizes="(max-width: 768px) 100vw, 800px"
                   />
                   <div className="absolute top-0 right-0 p-3">
                     <div className="glass px-3 py-1.5 rounded-full text-sm font-black flex items-center gap-1.5">

@@ -16,7 +16,7 @@ const ManualMap = dynamic(() => import('@/components/ManualMap'), {
   loading: () => <div className="w-full h-80 bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400">Loading Map...</div>
 });
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://quickcombo.alwaysdata.net';
 const UPI_ID = process.env.NEXT_PUBLIC_UPI_ID || 'ayushtomar061004-1@okaxis';
 const UPI_NAME = process.env.NEXT_PUBLIC_UPI_NAME || 'Ayush Tomar';
 

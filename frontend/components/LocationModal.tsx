@@ -4,7 +4,7 @@ import { Search, MapPin, X, Loader2, Navigation } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://quickcombo.alwaysdata.net';
 
 interface LocationModalProps {
   isOpen: boolean;

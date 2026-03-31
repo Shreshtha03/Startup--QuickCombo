@@ -66,7 +66,7 @@ class Restaurant(models.Model):
     delivery_time = models.IntegerField(default=30)
     cuisines = models.CharField(max_length=200, help_text="e.g. North Indian, Chinese")
     image_url = models.URLField(blank=True)
-    is_featured = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False, db_index=True)
 
     def __str__(self):
         return self.name
@@ -80,9 +80,9 @@ class MenuItem(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
     image_url = models.URLField(blank=True)
     is_veg = models.BooleanField(default=True)
-    is_available = models.BooleanField(default=True)
-    is_featured = models.BooleanField(default=False)
-    is_combo_eligible = models.BooleanField(default=True)
+    is_available = models.BooleanField(default=True, db_index=True)
+    is_featured = models.BooleanField(default=False, db_index=True)
+    is_combo_eligible = models.BooleanField(default=True, db_index=True)
     rating = models.FloatField(default=4.2)
     prep_time = models.IntegerField(default=20)  # minutes
 

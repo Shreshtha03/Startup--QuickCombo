@@ -10,7 +10,7 @@ import axios from 'axios';
 import AuthModal from './AuthModal';
 import LocationModal from './LocationModal';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://quickcombo.alwaysdata.net';
 
 export default function Navbar() {
   const router = useRouter();

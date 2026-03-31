@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickCombo Partner Invite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #22c55e;
+            --black: #0a0a0a;
+            --white: #ffffff;
+            --gray: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        /* A3 Dimensions: 297mm x 420mm */
+        .poster {
+            width: 297mm;
+            height: 420mm;
+            background: var(--black);
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+            border: 5px solid var(--primary);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            padding: 80px;
+        }
+
+        /* Ambient Glow */
+        .glow {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            font-size: 80px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .headline {
+            font-size: 110px;
+            line-height: 1;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        .highlight {
+            color: var(--primary);
+            background: rgba(34, 197, 94, 0.1);
+            padding: 10px 30px;
+            border-radius: 20px;
+        }
+
+        .main-perks {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .perk-card {
+            background: #151515;
+            padding: 40px;
+            border-radius: 40px;
+            border-left: 15px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .perk-icon {
+            font-size: 60px;
+        }
+
+        .perk-text h2 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .perk-text p {
+            font-size: 32px;
+            color: var(--gray);
+        }
+
+        .margin-table {
+            background: var(--primary);
+            color: var(--black);
+            padding: 50px;
+            border-radius: 40px;
+            margin-bottom: 80px;
+        }
+
+        .margin-table h3 {
+            font-size: 40px;
+            font-weight: 900;
+            margin-bottom: 30px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .item-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .item-box .label {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .item-box .money {
+            font-size: 50px;
+            font-weight: 900;
+        }
+
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            border-top: 2px dashed #333;
+            padding-top: 50px;
+        }
+
+        .call-action {
+            font-size: 40px;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .phone {
+            font-size: 60px;
+            color: var(--primary);
+            font-weight: 900;
+        }
+
+        .sub-text {
+            font-size: 24px;
+            color: #555;
+            margin-top: 20px;
+        }
+
+        @media print {
+            body { padding: 0; background: none; }
+            .poster { box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="poster">
+        <div class="glow"></div>
+        
+        <div class="header">
+            <div class="logo">Quick<span>Combo</span> Partner</div>
+            <p class="sub-text" style="color: var(--gray); font-size: 30px;">Growing Local Businesses, Together.</p>
+        </div>
+
+        <h1 class="headline">
+            Increase Your Sales <br>
+            With <span class="highlight">ZERO Investment</span>
+        </h1>
+
+        <div class="main-perks">
+            <div class="perk-card">
+                <div class="perk-icon">📦</div>
+                <div class="perk-text">
+                    <h2>Bas Pack Karo!</h2>
+                    <p>Order hum denge, aapko sirf pack karke ready rakhna hai.</p>
+                </div>
+            </div>
+
+            <div class="perk-card">
+                <div class="perk-icon">🛵</div>
+                <div class="perk-text">
+                    <h2>Humare Delivery Partners</h2>
+                    <p>Aapki dukaan se order pick up karna humari zimmedari.</p>
+                </div>
+            </div>
+
+            <div class="perk-card">
+                <div class="perk-icon">💰</div>
+                <div class="perk-text">
+                    <h2>No Setup Fees</h2>
+                    <p>Dukaan register karne ka ya listing ka ₹1 bhi nahi dena.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="margin-table">
+            <h3>Aapka Seedha Munafa (Per Item)</h3>
+            <div class="grid">
+                <div class="item-box">
+                    <span class="label">Food Items / Combos</span>
+                    <span class="money">₹10 <small style="font-size: 20px;">Profit</small></span>
+                </div>
+                <div class="item-box">
+                    <span class="label">Chips / Cigarettes / Drinks</span>
+                    <span class="money">₹5 <small style="font-size: 20px;">Profit</small></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p class="call-action">Apni dukaan ko QuickCombo se aaj hi jodein!</p>
+            <div class="phone">📞 Contact: +91 [Aapka Number]</div>
+            <p style="font-size: 24px; margin-top: 20px; color: var(--gray);">"Aapki Quality, Humari Delivery"</p>
+        </div>
+    </div>
+
+</body>
+</html>

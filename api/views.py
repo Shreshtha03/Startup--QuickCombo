@@ -9,7 +9,7 @@ from rest_framework import status
 from django.views.decorators.cache import cache_page
 from .models import User, Category, MenuItem, Order, OrderItem, Address
 from .serializers import (UserSerializer, CategorySerializer, MenuItemSerializer,
-                          OrderSerializer, AddressSerializer)
+                          OrderSerializer, AddressSerializer, RestaurantSerializer)
 
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -263,10 +263,6 @@ def menu_item_detail(request, pk):
 @api_view(['GET'])
 def restaurant_list(request):
     from .models import Restaurant
-    class RestaurantSerializer(__import__('rest_framework').serializers.ModelSerializer):
-        class Meta:
-            model = Restaurant
-            fields = '__all__'
     restaurants = Restaurant.objects.all().order_by('-rating')
     return Response(RestaurantSerializer(restaurants, many=True).data)
 

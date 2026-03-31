@@ -6,7 +6,7 @@ import { useCart } from '@/context/CartContext';
 import { Zap, Plus, Check, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://quickcombo.alwaysdata.net';
 
 interface MenuItem {
   id: number; name: string; description: string; price: number;

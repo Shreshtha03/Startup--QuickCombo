@@ -1,14 +1,16 @@
 'use client';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Zap, Star, Clock, MapPin, ChevronRight, Search } from 'lucide-react';
+import Image from 'next/image';
 import FoodCard from '@/components/FoodCard';
 import WeatherWidget from '@/components/WeatherWidget';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://quickcombo.alwaysdata.net';
 
 interface MenuItem {
   id: number; name: string; description: string; price: number;
@@ -29,26 +31,22 @@ interface Restaurant {
 
 export default function HomePage() {
   const router = useRouter();
-  const [featured, setFeatured] = useState<MenuItem[]>([]);
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('');
   const [search, setSearch] = useState('');
 
+  const fetcher = (url: string) => axios.get(url).then(res => res.data);
+
+  const { data: featured = [], isLoading: loadingFeatured } = useSWR<MenuItem[]>(`${API}/api/menu/?featured=1`, fetcher);
+  const { data: restaurants = [], isLoading: loadingRestaurants } = useSWR<Restaurant[]>(`${API}/api/restaurants/`, fetcher);
+  const { data: categories = [], isLoading: loadingCategories } = useSWR<Category[]>(`${API}/api/categories/`, fetcher);
+
+  const loading = loadingFeatured || loadingRestaurants || loadingCategories;
+
   useEffect(() => {
-    Promise.all([
-      axios.get(`${API}/api/menu/?featured=1`),
-      axios.get(`${API}/api/restaurants/`),
-      axios.get(`${API}/api/categories/`)
-    ]).then(([menuRes, restRes, catRes]) => {
-      setFeatured(menuRes.data);
-      setRestaurants(restRes.data);
-      setCategories(catRes.data);
-      if (catRes.data.length > 0) setActiveCategory(catRes.data[0].slug);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0].slug);
+    }
+  }, [categories, activeCategory]);
 
   const filteredRestaurants = restaurants.filter(r => 
     r.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -178,7 +176,13 @@ export default function HomePage() {
                   className="min-w-[280px] sm:min-w-[320px] rounded-3xl overflow-hidden glass hover:border-green-500/40 transition-all snap-center group cursor-pointer"
                 >
                   <div className="h-[140px] relative overflow-hidden">
-                    <img src={rest.image_url} alt={rest.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <Image 
+                      src={rest.image_url} 
+                      alt={rest.name} 
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                      sizes="(max-width: 768px) 100vw, 320px"
+                    />
                     <div className="absolute top-0 right-0 p-3">
                       <div className="glass px-2.5 py-1 rounded-full text-xs font-black flex items-center gap-1">
                         <Star size={12} className="text-green-400 fill-green-400" /> {rest.rating}

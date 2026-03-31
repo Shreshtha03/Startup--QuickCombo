@@ -16,7 +16,7 @@ const TrackingMap = dynamic(() => import('@/components/TrackingMap'), {
   loading: () => <div className="w-full h-full shimmer bg-gray-800" />
 });
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://quickcombo.alwaysdata.net';
 
 export default function OrderTrackingPage() {
   const params = useParams();

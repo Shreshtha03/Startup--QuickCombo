@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, Suspense } from 'react';
 import axios from 'axios';
 import { Search, LayoutGrid, AlignJustify, Filter } from 'lucide-react';
+import Image from 'next/image';
 import FoodCard from '@/components/FoodCard';
 import { useSearchParams } from 'next/navigation';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://quickcombo.alwaysdata.net';
 
 interface Category {
   slug: string;
@@ -26,9 +27,17 @@ function MenuContent() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [restaurantId, setRestaurantId] = useState(searchParams.get('restaurant') || '');
   const [vegOnly, setVegOnly] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     axios.get(`${API}/api/categories/`).then(r => {
@@ -40,7 +49,7 @@ function MenuContent() {
     setLoading(true);
     const params = new URLSearchParams();
     if (category) params.set('category', category);
-    if (search) params.set('search', search);
+    if (debouncedSearch) params.set('search', debouncedSearch);
     if (restaurantId) params.set('restaurant', restaurantId);
     
     axios.get(`${API}/api/menu/?${params.toString()}`)
@@ -49,7 +58,7 @@ function MenuContent() {
         setLoading(false); 
       })
       .catch(() => setLoading(false));
-  }, [category, search, restaurantId]);
+  }, [category, debouncedSearch, restaurantId]);
 
   const filtered = vegOnly ? items.filter(i => i.is_veg) : items;
 
