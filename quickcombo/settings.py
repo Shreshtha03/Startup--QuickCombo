@@ -53,12 +53,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'quickcombo.wsgi.application'
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
-        conn_max_age=600
-    )
-}
+try:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+            conn_max_age=600
+        )
+    }
+    # If the URL is set but doesn't contain postgres/mysql/etc., it might still be invalid
+    if not DATABASES['default'].get('ENGINE'):
+         raise ValueError("No database engine found in DATABASE_URL")
+except Exception as e:
+    print(f"⚠️ DATABASE_URL Error: {e}. Falling back to SQLite.")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 CACHES = {
     'default': {
