@@ -275,6 +275,38 @@ def menu_item_detail(request, pk):
         return Response({'error': 'Not found'}, status=404)
 
 
+@api_view(['GET'])
+def force_seed(request):
+    from .models import Restaurant, Category, MenuItem
+    
+    # Categories
+    cats = {
+        'beverages': Category.objects.get_or_create(slug='beverages', defaults={'name':'Beverages', 'icon':'🥤'})[0],
+        'snacks': Category.objects.get_or_create(slug='snacks', defaults={'name':'Snacks', 'icon':'🍔'})[0],
+        'desserts': Category.objects.get_or_create(slug='desserts', defaults={'name':'Desserts', 'icon':'🍨'})[0],
+        'seafood': Category.objects.get_or_create(slug='seafood', defaults={'name':'Sea Food', 'icon':'🍤'})[0],
+        'rice_pulao': Category.objects.get_or_create(slug='rice-pulao', defaults={'name':'Rice & Pulao', 'icon':'🍚'})[0],
+        'noodles': Category.objects.get_or_create(slug='noodles', defaults={'name':'Noodles', 'icon':'🍜'})[0],
+        'schezwan': Category.objects.get_or_create(slug='schezwan', defaults={'name':'Schezwan Specials', 'icon':'🔥'})[0],
+    }
+
+    # Restaurants
+    disco, _ = Restaurant.objects.get_or_create(name="Disco Juice & Snacks", defaults={"rating": 4.6, "delivery_time": 15, "cuisines": "Juices, Shakes, Snacks", "image_url": "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800", "is_featured": True})
+    chettinadu, _ = Restaurant.objects.get_or_create(name="Classic Chettinadu", defaults={"rating": 4.4, "delivery_time": 30, "cuisines": "South Indian, Sea Food", "image_url": "https://images.unsplash.com/photo-1589187151003-0dd473a09492?w=800", "is_featured": True})
+
+    # Clear and Seed (Simplified for speed)
+    MenuItem.objects.filter(restaurant__in=[disco, chettinadu]).delete()
+    
+    # Disco (A few samples to confirm)
+    MenuItem.objects.create(restaurant=disco, category=cats['beverages'], name="Oreo Shake", price=95, is_veg=True)
+    MenuItem.objects.create(restaurant=disco, category=cats['snacks'], name="Veg Burger", price=95, is_veg=True)
+    
+    # Chettinadu
+    MenuItem.objects.create(restaurant=chettinadu, category=cats['seafood'], name="Prawn Chettinad", price=195, is_veg=False)
+    
+    return Response({"message": f"Successfully seeded live DB. Restaurant count: {Restaurant.objects.count()}"})
+
+
 @cache_page(60 * 15)
 @api_view(['GET'])
 def restaurant_list(request):
