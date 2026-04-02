@@ -22,6 +22,7 @@ urlpatterns = [
     path('orders/place/', views.place_order),
     path('orders/<int:order_id>/', views.order_detail),
     path('orders/<int:order_id>/tracking/', views.order_tracking),
+    path('debug-db/', views.debug_db),
 
     # Location
     path('location/autocomplete/', views.location_autocomplete),

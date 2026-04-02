@@ -10,7 +10,7 @@ from django.views.decorators.cache import cache_page
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from .models import User, Category, MenuItem, Order, OrderItem, Address
+from .models import User, Category, MenuItem, Order, OrderItem, Address, Restaurant
 from .serializers import (UserSerializer, CategorySerializer, MenuItemSerializer,
                           OrderSerializer, AddressSerializer, RestaurantSerializer)
 
@@ -273,6 +273,28 @@ def menu_item_detail(request, pk):
         return Response(MenuItemSerializer(item).data)
     except MenuItem.DoesNotExist:
         return Response({'error': 'Not found'}, status=404)
+
+
+@api_view(['GET'])
+def debug_db(request):
+    from django.conf import settings
+    import os
+    db_url = os.environ.get('DATABASE_URL', 'NOT_SET')
+    masked_url = db_url[:15] + "..." if db_url != 'NOT_SET' else 'NOT_SET'
+    
+    try:
+        count = Restaurant.objects.count()
+        conn_status = "OK"
+    except Exception as e:
+        count = -1
+        conn_status = f"ERROR: {str(e)}"
+
+    return Response({
+        "db_url": masked_url,
+        "engine": settings.DATABASES['default']['ENGINE'],
+        "connection": conn_status,
+        "restaurant_count": count
+    })
 
 
 @cache_page(60 * 15)
