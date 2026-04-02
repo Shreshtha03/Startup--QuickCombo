@@ -9,11 +9,14 @@ def deploy_and_seed():
         ssh.connect('ssh-quickcombo.alwaysdata.net', username='quickcombo', password='Dinesh@061004', timeout=15)
         
         # Commands to pull latest code and run the seed script
+        # Commands to pull, restart, and force-seed
         commands = [
             "cd ~/www/quickcombo_backend/",
             "git stash",
             "git pull origin main",
-            "source venv/bin/activate && python seed_restaurants.py"
+            "touch quickcombo/wsgi.py",  # Forces AlwaysData to reload the Python process
+            "sleep 2",
+            "curl -X GET https://quickcombo.alwaysdata.net/api/force-seed/"
         ]
         
         full_cmd = " && ".join(commands)
