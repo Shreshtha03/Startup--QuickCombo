@@ -53,14 +53,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'quickcombo.wsgi.application'
 
+db_url = config('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+
+# Robust fix for common connection string typos before parsing
+if "slmode=" in db_url:
+    db_url = db_url.replace("slmode=", "sslmode=")
+
 try:
     DATABASES = {
         'default': dj_database_url.config(
-            default=config('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
-            conn_max_age=600
+            default=db_url,
+            conn_max_age=600,
+            ssl_require=True if "sslmode=require" in db_url else False
         )
     }
-    # If the URL is set but doesn't contain postgres/mysql/etc., it might still be invalid
     if not DATABASES['default'].get('ENGINE'):
          raise ValueError("No database engine found in DATABASE_URL")
 except Exception as e:

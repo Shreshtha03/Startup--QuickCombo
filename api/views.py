@@ -18,20 +18,9 @@ from .serializers import (UserSerializer, CategorySerializer, MenuItemSerializer
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 
 def send_otp_email(to_email, otp, name="User"):
-    """Send OTP via Brevo HTTP API."""
-    api_key = getattr(settings, 'BREVO_API_KEY', None)
-    sender_email = getattr(settings, 'BREVO_SENDER_EMAIL', 'support@quickcombo.in')
-    
-    if not api_key:
-        print("Error: BREVO_API_KEY not configured.")
-        return False
-
-    url = "https://api.brevo.com/v3/smtp/email"
-    headers = {
-        "accept": "application/json",
-        "api-key": api_key,
-        "content-type": "application/json"
-    }
+    """Send OTP via Django SMTP backend."""
+    subject = f"Your QuickCombo OTP: {otp}"
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'support@quickcombo.in')
     
     html_content = f"""
     <div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;background:#0a0a0a;color:#fff;border-radius:16px;padding:32px;border:1px solid #22c55e22">
@@ -44,40 +33,23 @@ def send_otp_email(to_email, otp, name="User"):
       <p style="font-size:12px;color:#6b7280">Valid for 10 minutes. Never share this code.</p>
     </div>"""
     
-    payload = {
-        "sender": {"name": "QuickCombo", "email": sender_email},
-        "to": [{"email": to_email, "name": name}],
-        "subject": f"Your QuickCombo OTP: {otp}",
-        "htmlContent": html_content
-    }
+    text_content = strip_tags(html_content)
     
     try:
-        response = requests.post(url, json=payload, headers=headers, timeout=10)
-        if response.status_code == 201:
-            return True
-        print(f"Brevo API Error (OTP): {response.status_code} - {response.text}")
-        return False
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        print(f"✅ OTP email sent successfully to {to_email} via SMTP")
+        return True
     except Exception as e:
-        print(f"Brevo API Exception (OTP): {e}")
+        print(f"❌ SMTP Error (OTP) for {to_email}: {e}")
         return False
 
 
 def send_order_confirmation_email(order):
-    """Send order confirmation via Brevo HTTP API to user and admin."""
-    api_key = getattr(settings, 'BREVO_API_KEY', None)
-    sender_email = getattr(settings, 'BREVO_SENDER_EMAIL', 'support@quickcombo.in')
-    admin_email = getattr(settings, 'ADMIN_EMAIL', sender_email)
-    
-    if not api_key:
-        print("Error: BREVO_API_KEY not configured.")
-        return False
-
-    url = "https://api.brevo.com/v3/smtp/email"
-    headers = {
-        "accept": "application/json",
-        "api-key": api_key,
-        "content-type": "application/json"
-    }
+    """Send order confirmation via Django SMTP backend to user and admin."""
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'support@quickcombo.in')
+    admin_email = getattr(settings, 'ADMIN_EMAIL', from_email)
     
     items_html = "".join([
         f"<tr><td style='padding:8px;color:#d1d5db'>{item.name}</td>"
@@ -130,33 +102,28 @@ def send_order_confirmation_email(order):
     </div>"""
 
     # Send to User
+    user_subject = f"🎉 Order Confirmed! #QC{order.id:04d}"
     user_html = html_template.replace("@TITLE@", "🥗 QuickCombo — Order Confirmed!").replace("@MESSAGE@", f"Hi {order.user_name}, your order is being prepared! 🚀")
-    
-    payload_user = {
-        "sender": {"name": "QuickCombo", "email": sender_email},
-        "to": [{"email": order.user_email, "name": order.user_name}],
-        "subject": f"🎉 Order Confirmed! #QC{order.id:04d}",
-        "htmlContent": user_html
-    }
+    user_text = strip_tags(user_html)
     
     try:
-        requests.post(url, json=payload_user, headers=headers, timeout=10)
+        msg = EmailMultiAlternatives(user_subject, user_text, from_email, [order.user_email])
+        msg.attach_alternative(user_html, "text/html")
+        msg.send()
         
         # Send to Admin
         if admin_email:
             admin_subject = f"🚨 New Order Alert! #QC{order.id:04d} from {order.user_name}"
             admin_html = html_template.replace("@TITLE@", "🥗 QuickCombo — NEW ORDER!").replace("@MESSAGE@", f"New order received from {order.user_name}. Prepare immediately! 🚀")
-            payload_admin = {
-                "sender": {"name": "QuickCombo", "email": sender_email},
-                "to": [{"email": admin_email}],
-                "subject": admin_subject,
-                "htmlContent": admin_html
-            }
-            requests.post(url, json=payload_admin, headers=headers, timeout=10)
+            admin_text = strip_tags(admin_html)
+            
+            admin_msg = EmailMultiAlternatives(admin_subject, admin_text, from_email, [admin_email])
+            admin_msg.attach_alternative(admin_html, "text/html")
+            admin_msg.send()
             
         return True
     except Exception as e:
-        print(f"Brevo API Error (Order): {e}")
+        print(f"❌ SMTP Error (Order): {e}")
         return False
 
 
@@ -483,11 +450,20 @@ def location_autocomplete(request):
     if not q or len(q) < 3:
         return Response([])
     try:
+        api_key = getattr(settings, 'GEOAPIFY_KEY', '')
+        if not api_key:
+            print("Error: GEOAPIFY_KEY not configured.")
+            return Response({'error': 'Location service not configured'}, status=500)
+
         r = requests.get(
             "https://api.geoapify.com/v1/geocode/autocomplete",
-            params={'text': q, 'apiKey': settings.GEOAPIFY_KEY, 'limit': 5, 'filter': 'countrycode:in'},
+            params={'text': q, 'apiKey': api_key, 'limit': 5, 'filter': 'countrycode:in'},
             timeout=8
         )
+        if r.status_code != 200:
+             print(f"Geoapify Error (Autocomplete): {r.status_code} - {r.text}")
+             return Response({'error': 'Location service error'}, status=r.status_code)
+
         features = r.json().get('features', [])
         results = [{
             'display': f.get('properties', {}).get('formatted', ''),
@@ -508,11 +484,20 @@ def reverse_geocode(request):
     if not lat or not lng:
         return Response({'error': 'lat and lng required'}, status=400)
     try:
+        api_key = getattr(settings, 'GEOAPIFY_KEY', '')
+        if not api_key:
+             print("Error: GEOAPIFY_KEY not configured.")
+             return Response({'error': 'Location service not configured'}, status=500)
+
         r = requests.get(
             "https://api.geoapify.com/v1/geocode/reverse",
-            params={'lat': lat, 'lon': lng, 'apiKey': settings.GEOAPIFY_KEY},
+            params={'lat': lat, 'lon': lng, 'apiKey': api_key},
             timeout=8
         )
+        if r.status_code != 200:
+             print(f"Geoapify Error (Reverse): {r.status_code} - {r.text}")
+             return Response({'error': 'Location service error'}, status=r.status_code)
+
         features = r.json().get('features', [])
         if features:
             props = features[0].get('properties', {})
@@ -600,3 +585,36 @@ def user_addresses(request):
             is_default=data.get('is_default', False),
         )
         return Response(AddressSerializer(addr).data, status=201)
+
+@api_view(['GET'])
+def debug_db(request):
+    """Debug endpoint to verify DB and API key status."""
+    from django.db import connection
+    db_ok = False
+    db_error = None
+    try:
+        connection.ensure_connection()
+        db_ok = True
+    except Exception as e:
+        db_ok = False
+        db_error = str(e)
+
+    # Check API keys (obfuscated)
+    brevo_key = getattr(settings, 'BREVO_API_KEY', '')
+    geo_key = getattr(settings, 'GEOAPIFY_KEY', '')
+    
+    return Response({
+        'status': 'healthy' if db_ok else 'unhealthy',
+        'database': {
+            'connected': db_ok,
+            'error': db_error if not db_ok else None,
+            'restaurants_count': Restaurant.objects.count(),
+            'menu_items_count': MenuItem.objects.count() if db_ok else 0,
+        },
+        'api_keys': {
+            'smtp_configured': bool(getattr(settings, 'EMAIL_HOST_PASSWORD', '')),
+            'smtp_user': getattr(settings, 'EMAIL_HOST_USER', 'MISSING'),
+            'geoapify_configured': bool(geo_key),
+            'geoapify_preview': f"{geo_key[:10]}...{geo_key[-4:]}" if geo_key else "MISSING",
+        }
+    })

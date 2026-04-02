@@ -39,32 +39,57 @@ export default function Navbar() {
   const fetchLocation = () => {
     setIsLocating(true);
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
+      alert('❌ Geolocation is not supported by your browser. Please enter your address manually.');
       setIsLocating(false);
       return;
     }
+    
+    // Set a timeout for the location request
+    const locationOptions = {
+        enableHighAccuracy: true,
+        timeout: 10000, // 10 seconds
+        maximumAge: 0
+    };
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
+          console.log(`Detecting address for: ${latitude}, ${longitude}`);
           const r = await axios.get(`${API}/api/location/reverse/`, {
             params: { lat: latitude, lng: longitude }
           });
           const fetchedAddress = r.data.address;
           if (fetchedAddress) {
             onSelectLocation(fetchedAddress, latitude, longitude);
+          } else {
+            alert('⚠️ We found your coordinates but could not find a matching street address. Please select manually.');
           }
         } catch (e) {
-          console.error(e);
-          alert('Could not fetch address');
+          console.error('Reverse Geocode Error:', e);
+          alert('❌ Could not fetch the full address. Please type it in the search box.');
         } finally {
           setIsLocating(false);
         }
       },
-      () => {
-        alert('Location permission denied');
+      (err) => {
         setIsLocating(false);
-      }
+        switch(err.code) {
+          case err.PERMISSION_DENIED:
+            alert('🔒 Location permission denied. Please enable location access in your browser settings to use this feature.');
+            break;
+          case err.POSITION_UNAVAILABLE:
+            alert('🚫 Your location information is unavailable. Try moving to a more open area or search manually.');
+            break;
+          case err.TIMEOUT:
+            alert('⌛ Location request timed out. Please try again or search manually.');
+            break;
+          default:
+            alert('⚠️ An unknown error occurred while detecting location.');
+            break;
+        }
+      },
+      locationOptions
     );
   };
 
