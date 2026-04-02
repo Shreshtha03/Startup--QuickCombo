@@ -2,10 +2,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, Suspense } from 'react';
 import axios from 'axios';
-import { Search, LayoutGrid, AlignJustify, Filter } from 'lucide-react';
+import { Search, LayoutGrid, AlignJustify, Filter, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import FoodCard from '@/components/FoodCard';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://quickcombo.alwaysdata.net';
 
@@ -23,6 +23,7 @@ interface MenuItem {
 
 function MenuContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,9 +68,20 @@ function MenuContent() {
       {/* Search bar */}
       <div className="sticky top-14 z-[90] bg-black/90 backdrop-blur-xl px-4 pt-4 pb-3 border-b border-white/5">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-black text-white">
-            {restaurantId && items.length > 0 ? items[0].restaurant_name : 'Explore Menu'}
-          </h1>
+          <div className="flex items-center gap-3">
+            {restaurantId && (
+              <button 
+                onClick={() => router.back()}
+                className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                title="Go Back"
+              >
+                <ArrowLeft size={20} />
+              </button>
+            )}
+            <h1 className="text-xl font-black text-white">
+              {restaurantId && items.length > 0 ? items[0].restaurant_name : 'Explore Menu'}
+            </h1>
+          </div>
           <div className="flex items-center gap-2">
              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
              <span className="text-[10px] font-bold text-green-500 uppercase tracking-wider">Live Menu</span>

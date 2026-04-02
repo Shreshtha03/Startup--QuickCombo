@@ -39,9 +39,12 @@ export default function FoodCard({ item }: { item: MenuItem }) {
     <div className="flex justify-between items-start p-4 border-b border-white/5 bg-black/40 hover:bg-white/[0.02] transition-colors group">
       {/* Content Left */}
       <div className="flex-1 min-w-0 pr-4">
-        <h3 className="font-extrabold text-[16px] text-white leading-tight mb-1 group-hover:text-green-500 transition-colors">
-          {item.name}
-        </h3>
+        <div className="flex items-center gap-2 mb-1">
+          <div className={`veg-badge ${item.is_veg ? 'veg' : 'non-veg'} scale-75 -ml-1`} />
+          <h3 className="font-extrabold text-[16px] text-white leading-tight group-hover:text-green-500 transition-colors">
+            {item.name}
+          </h3>
+        </div>
         
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
           <span className="font-black text-sm text-white/90 tracking-tight">₹{item.price}</span>
