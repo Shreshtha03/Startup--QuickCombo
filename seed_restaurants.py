@@ -9,13 +9,13 @@ from api.models import Restaurant, Category, MenuItem
 def seed_restaurants():
     # ─── CATEGORIES ─────────────────────────────────────────────────────────────
     categories = {
-        'beverages': Category.objects.get_or_create(name='Beverages', slug='beverages', defaults={'icon':'🥤'})[0],
-        'snacks': Category.objects.get_or_create(name='Snacks', slug='snacks', defaults={'icon':'🍔'})[0],
-        'desserts': Category.objects.get_or_create(name='Desserts', slug='desserts', defaults={'icon':'🍨'})[0],
-        'seafood': Category.objects.get_or_create(name='Sea Food', slug='seafood', defaults={'icon':'🍤'})[0],
-        'rice_pulao': Category.objects.get_or_create(name='Rice & Pulao', slug='rice-pulao', defaults={'icon':'🍚'})[0],
-        'noodles': Category.objects.get_or_create(name='Noodles', slug='noodles', defaults={'icon':'🍜'})[0],
-        'schezwan': Category.objects.get_or_create(name='Schezwan Specials', slug='schezwan', defaults={'icon':'🔥'})[0],
+        'beverages': Category.objects.get_or_create(slug='beverages', defaults={'name':'Beverages', 'icon':'🥤'})[0],
+        'snacks': Category.objects.get_or_create(slug='snacks', defaults={'name':'Snacks', 'icon':'🍔'})[0],
+        'desserts': Category.objects.get_or_create(slug='desserts', defaults={'name':'Desserts', 'icon':'🍨'})[0],
+        'seafood': Category.objects.get_or_create(slug='seafood', defaults={'name':'Sea Food', 'icon':'🍤'})[0],
+        'rice_pulao': Category.objects.get_or_create(slug='rice-pulao', defaults={'name':'Rice & Pulao', 'icon':'🍚'})[0],
+        'noodles': Category.objects.get_or_create(slug='noodles', defaults={'name':'Noodles', 'icon':'🍜'})[0],
+        'schezwan': Category.objects.get_or_create(slug='schezwan', defaults={'name':'Schezwan Specials', 'icon':'🔥'})[0],
     }
 
     # ─── RESTAURANTS ──────────────────────────────────────────────────────────
