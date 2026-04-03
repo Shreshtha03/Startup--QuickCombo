@@ -42,7 +42,9 @@ def send_otp_email(to_email, otp, name="User"):
         print(f"✅ OTP email sent successfully to {to_email} via SMTP")
         return True
     except Exception as e:
-        print(f"❌ SMTP Error (OTP) for {to_email}: {e}")
+        host = getattr(settings, 'EMAIL_HOST', 'N/A')
+        port = getattr(settings, 'EMAIL_PORT', 'N/A')
+        print(f"❌ SMTP Error (OTP) for {to_email} [{host}:{port}]: {e}")
         return False
 
 
@@ -123,7 +125,9 @@ def send_order_confirmation_email(order):
             
         return True
     except Exception as e:
-        print(f"❌ SMTP Error (Order): {e}")
+        host = getattr(settings, 'EMAIL_HOST', 'N/A')
+        port = getattr(settings, 'EMAIL_PORT', 'N/A')
+        print(f"❌ SMTP Error (Order) [{host}:{port}]: {e}")
         return False
 
 
