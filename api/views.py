@@ -18,10 +18,21 @@ from .serializers import (UserSerializer, CategorySerializer, MenuItemSerializer
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 
 def send_otp_email(to_email, otp, name="User"):
-    """Send OTP via Django SMTP backend."""
-    subject = f"Your QuickCombo OTP: {otp}"
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'support@quickcombo.in')
-    
+    """Send OTP email using Brevo HTTP API."""
+    api_key = getattr(settings, 'BREVO_API_KEY', '')
+    sender_email = getattr(settings, 'BREVO_SENDER_EMAIL', 'support@quickcombo.in')
+
+    if not api_key:
+        print("❌ Warning: BREVO_API_KEY not configured")
+        return False
+
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
+
     html_content = f"""
     <div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;background:#0a0a0a;color:#fff;border-radius:16px;padding:32px;border:1px solid #22c55e22">
       <h2 style="color:#22c55e;margin:0 0 8px">🥗 QuickCombo</h2>
@@ -32,27 +43,44 @@ def send_otp_email(to_email, otp, name="User"):
       </div>
       <p style="font-size:12px;color:#6b7280">Valid for 10 minutes. Never share this code.</p>
     </div>"""
-    
-    text_content = strip_tags(html_content)
-    
+
+    data = {
+        "sender": {"name": "QuickCombo", "email": sender_email},
+        "to": [{"email": to_email, "name": name}],
+        "subject": f"Your QuickCombo OTP: {otp}",
+        "htmlContent": html_content
+    }
+
     try:
-        msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
-        print(f"✅ OTP email sent successfully to {to_email} via SMTP")
-        return True
+        response = requests.post(url, headers=headers, json=data, timeout=10)
+        if response.status_code in [200, 201]:
+            print(f"✅ OTP email sent successfully to {to_email}")
+            return True
+        else:
+            print(f"❌ Brevo API Error (OTP): {response.status_code} - {response.text}")
+            return False
     except Exception as e:
-        host = getattr(settings, 'EMAIL_HOST', 'N/A')
-        port = getattr(settings, 'EMAIL_PORT', 'N/A')
-        print(f"❌ SMTP Error (OTP) for {to_email} [{host}:{port}]: {e}")
+        print(f"❌ Request Error (OTP): {e}")
         return False
 
 
 def send_order_confirmation_email(order):
-    """Send order confirmation via Django SMTP backend to user and admin."""
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'support@quickcombo.in')
-    admin_email = getattr(settings, 'ADMIN_EMAIL', from_email)
-    
+    """Send order confirmation email using Brevo HTTP API."""
+    api_key = getattr(settings, 'BREVO_API_KEY', '')
+    sender_email = getattr(settings, 'BREVO_SENDER_EMAIL', 'support@quickcombo.in')
+    admin_email = getattr(settings, 'ADMIN_EMAIL', sender_email)
+
+    if not api_key:
+        print("❌ Warning: BREVO_API_KEY not configured")
+        return False
+
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
+
     items_html = "".join([
         f"<tr><td style='padding:8px;color:#d1d5db'>{item.name}</td>"
         f"<td style='padding:8px;color:#6b7280;text-align:center'>x{item.quantity}</td>"
@@ -106,28 +134,33 @@ def send_order_confirmation_email(order):
     # Send to User
     user_subject = f"🎉 Order Confirmed! #QC{order.id:04d}"
     user_html = html_template.replace("@TITLE@", "🥗 QuickCombo — Order Confirmed!").replace("@MESSAGE@", f"Hi {order.user_name}, your order is being prepared! 🚀")
-    user_text = strip_tags(user_html)
     
+    user_data = {
+        "sender": {"name": "QuickCombo", "email": sender_email},
+        "to": [{"email": order.user_email, "name": order.user_name}],
+        "subject": user_subject,
+        "htmlContent": user_html
+    }
+
     try:
-        msg = EmailMultiAlternatives(user_subject, user_text, from_email, [order.user_email])
-        msg.attach_alternative(user_html, "text/html")
-        msg.send()
+        requests.post(url, headers=headers, json=user_data, timeout=10)
         
         # Send to Admin
         if admin_email:
             admin_subject = f"🚨 New Order Alert! #QC{order.id:04d} from {order.user_name}"
             admin_html = html_template.replace("@TITLE@", "🥗 QuickCombo — NEW ORDER!").replace("@MESSAGE@", f"New order received from {order.user_name}. Prepare immediately! 🚀")
-            admin_text = strip_tags(admin_html)
             
-            admin_msg = EmailMultiAlternatives(admin_subject, admin_text, from_email, [admin_email])
-            admin_msg.attach_alternative(admin_html, "text/html")
-            admin_msg.send()
+            admin_data = {
+                "sender": {"name": "QuickCombo", "email": sender_email},
+                "to": [{"email": admin_email, "name": "Admin"}],
+                "subject": admin_subject,
+                "htmlContent": admin_html
+            }
+            requests.post(url, headers=headers, json=admin_data, timeout=10)
             
         return True
     except Exception as e:
-        host = getattr(settings, 'EMAIL_HOST', 'N/A')
-        port = getattr(settings, 'EMAIL_PORT', 'N/A')
-        print(f"❌ SMTP Error (Order) [{host}:{port}]: {e}")
+        print(f"❌ Request Error (Order confirmation): {e}")
         return False
 
 
@@ -616,8 +649,8 @@ def debug_db(request):
             'menu_items_count': MenuItem.objects.count() if db_ok else 0,
         },
         'api_keys': {
-            'smtp_configured': bool(getattr(settings, 'EMAIL_HOST_PASSWORD', '')),
-            'smtp_user': getattr(settings, 'EMAIL_HOST_USER', 'MISSING'),
+            'brevo_configured': bool(brevo_key),
+            'brevo_preview': f"{brevo_key[:10]}...{brevo_key[-4:]}" if brevo_key else "MISSING",
             'geoapify_configured': bool(geo_key),
             'geoapify_preview': f"{geo_key[:10]}...{geo_key[-4:]}" if geo_key else "MISSING",
         }
