@@ -5,7 +5,7 @@ from .models import User, Category, MenuItem, Order, OrderItem, Address, Restaur
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'phone', 'name', 'date_joined']
+        fields = ['id', 'email', 'phone', 'name', 'is_staff', 'date_joined']
 
 
 class MenuItemSerializer(serializers.ModelSerializer):

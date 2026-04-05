@@ -30,4 +30,9 @@ urlpatterns = [
 
     # Weather
     path('weather/', views.weather),
+
+    # Admin Dashboard
+    path('admin/stats/', views.admin_stats),
+    path('admin/orders/', views.admin_orders),
+    path('admin/menu/', views.admin_menu_items),
 ]
