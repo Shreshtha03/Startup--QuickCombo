@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import User, Category, MenuItem, Order, OrderItem, Address, Restaurant
-
+from .models import User, Category, MenuItem, Restaurant, Order, OrderItem, Address
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,23 +7,21 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'email', 'phone', 'name', 'is_staff', 'date_joined']
 
 
-class MenuItemSerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source='category.name', read_only=True)
-    category_icon = serializers.CharField(source='category.icon', read_only=True)
-    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)
-
-    class Meta:
-        model = MenuItem
-        fields = ['id', 'name', 'description', 'price', 'image_url',
-                  'is_veg', 'is_available', 'is_featured', 'is_combo_eligible',
-                  'rating', 'prep_time', 'category_name', 'category_icon', 'category',
-                  'restaurant', 'restaurant_name']
-
-
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
-        fields = '__all__'
+        fields = ['id', 'name', 'rating', 'delivery_time', 'cuisines', 'image_url', 'is_featured']
+
+
+class MenuItemSerializer(serializers.ModelSerializer):
+    category_name = serializers.ReadOnlyField(source='category.name')
+    restaurant_name = serializers.ReadOnlyField(source='restaurant.name')
+
+    class Meta:
+        model = MenuItem
+        fields = ['id', 'name', 'description', 'price', 'image_url', 'is_veg', 
+                  'is_available', 'is_featured', 'is_combo_eligible', 'rating', 
+                  'prep_time', 'category', 'category_name', 'restaurant', 'restaurant_name']
 
 
 class CategorySerializer(serializers.ModelSerializer):

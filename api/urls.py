@@ -1,7 +1,13 @@
 from django.urls import path
 from . import views
+from . import admin_views
 
 urlpatterns = [
+    # ADMIN DASHBOARD (TOP PRIORITY)
+    path('admin/stats/', admin_views.admin_stats),
+    path('admin/orders/', admin_views.admin_orders),
+    path('admin/menu/', admin_views.admin_menu_items),
+
     # Auth
     path('auth/send-otp/', views.send_otp),
     path('auth/verify-otp/', views.verify_otp),
@@ -30,9 +36,4 @@ urlpatterns = [
 
     # Weather
     path('weather/', views.weather),
-
-    # Admin Dashboard
-    path('admin/stats/', views.admin_stats),
-    path('admin/orders/', views.admin_orders),
-    path('admin/menu/', views.admin_menu_items),
 ]

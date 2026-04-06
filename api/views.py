@@ -14,9 +14,6 @@ from .models import User, Category, MenuItem, Order, OrderItem, Address, Restaur
 from .serializers import (UserSerializer, CategorySerializer, MenuItemSerializer,
                           OrderSerializer, AddressSerializer, RestaurantSerializer)
 
-# Import Admin Views
-from .admin_views import admin_stats, admin_orders, admin_menu_items
-
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 

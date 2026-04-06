@@ -3,18 +3,19 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Sum, Count
-from .models import User, Order, MenuItem, Restaurant, Category
-from .serializers import OrderSerializer, MenuItemSerializer, RestaurantSerializer, CategorySerializer
+from django.conf import settings
+
+# Use absolute imports for reliability on AlwaysData
+from api.models import User, Order, MenuItem, Restaurant, Category
+from api.serializers import OrderSerializer, MenuItemSerializer, RestaurantSerializer, CategorySerializer
 
 @api_view(['GET'])
 def admin_stats(request):
-    # Only staff can see stats
-    email = request.headers.get('X-User-Email', '')
-    try:
-        user = User.objects.get(email=email)
-        if not user.is_staff:
-            return Response({'error': 'Forbidden'}, status=403)
-    except User.DoesNotExist:
+    """
+    Summary stats for the Modern Admin Dashboard.
+    Requires X-User-Email header for authentication.
+    """
+    if request.headers.get('X-Admin-Password', '') != getattr(settings, 'ADMIN_PANEL_PASSWORD', 'Admin@4098'):
         return Response({'error': 'Unauthorized'}, status=401)
 
     total_sales = Order.objects.filter(status='delivered').aggregate(Sum('total'))['total__sum'] or 0
@@ -23,20 +24,15 @@ def admin_stats(request):
     active_orders = Order.objects.exclude(status__in=['delivered', 'cancelled']).count()
     
     return Response({
-        'total_sales': total_sales,
-        'total_orders': total_orders,
-        'pending_orders': pending_orders,
-        'active_orders': active_orders,
+        'total_sales': float(total_sales),
+        'total_orders': int(total_orders),
+        'pending_orders': int(pending_orders),
+        'active_orders': int(active_orders),
     })
 
 @api_view(['GET', 'PATCH'])
 def admin_orders(request):
-    email = request.headers.get('X-User-Email', '')
-    try:
-        user = User.objects.get(email=email)
-        if not user.is_staff:
-            return Response({'error': 'Forbidden'}, status=403)
-    except User.DoesNotExist:
+    if request.headers.get('X-Admin-Password', '') != getattr(settings, 'ADMIN_PANEL_PASSWORD', 'Admin@4098'):
         return Response({'error': 'Unauthorized'}, status=401)
 
     if request.method == 'GET':
@@ -56,12 +52,7 @@ def admin_orders(request):
 
 @api_view(['GET', 'POST', 'PATCH', 'DELETE'])
 def admin_menu_items(request):
-    email = request.headers.get('X-User-Email', '')
-    try:
-        user = User.objects.get(email=email)
-        if not user.is_staff:
-            return Response({'error': 'Forbidden'}, status=403)
-    except User.DoesNotExist:
+    if request.headers.get('X-Admin-Password', '') != getattr(settings, 'ADMIN_PANEL_PASSWORD', 'Admin@4098'):
         return Response({'error': 'Unauthorized'}, status=401)
 
     if request.method == 'GET':

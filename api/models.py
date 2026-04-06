@@ -110,6 +110,7 @@ class Order(models.Model):
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
         ('preparing', 'Preparing'),
+        ('picked_up', 'Picked Up'),
         ('out_for_delivery', 'Out for Delivery'),
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
